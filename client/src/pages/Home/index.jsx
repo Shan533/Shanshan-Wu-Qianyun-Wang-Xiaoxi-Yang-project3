@@ -1,6 +1,7 @@
 import React from "react";
 import Navbar from "../../components/Navbar";
 import { Button, Input } from "antd";
+import { generate } from "generate-password";
 
 function Home() {
   return (
