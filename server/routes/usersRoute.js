@@ -21,7 +21,6 @@ function cookieDecryptor(request) {
 
 // localhost:8000/users/?startOfUsername=h
 router.post('/register', async function(request, response) {
-    console.log("Received register request");
     const requestBody = request.body;
     const username = requestBody.username;
     const password = requestBody.password;

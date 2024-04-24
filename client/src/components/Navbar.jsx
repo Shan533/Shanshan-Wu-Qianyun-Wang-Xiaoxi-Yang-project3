@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 function Navbar() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token"); // Assuming token is stored in local storage
-  const test = useState(true);
+  const test = useState(false);
 
   return (
     <nav className="shadow gray h-14 pt-6 header">

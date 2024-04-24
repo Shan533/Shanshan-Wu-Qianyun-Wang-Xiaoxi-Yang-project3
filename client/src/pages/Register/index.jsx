@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import { Link } from 'react-router-dom'
 import Navbar from "../../components/Navbar";
 import { Button, Form, Input, Typography } from 'antd';
 const { Title, Paragraph } = Typography;
@@ -69,6 +70,7 @@ function Register() {
                                 <Button type="primary" htmlType="submit" className="w-full">
                                     Register
                                 </Button>
+                                <Link to="/login">Already have an account? Login here.</Link>
                             </Form.Item>
                         </Form>
                     </div>
