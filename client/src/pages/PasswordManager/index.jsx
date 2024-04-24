@@ -1,7 +1,13 @@
 import React from "react";
+import Navbar from "../../components/Navbar";
 
 function PasswordManager() {
-  return <div>PasswordManager</div>;
+  return (
+    <>
+      <Navbar />
+      <div>PasswordManager</div>
+    </>
+  );
 }
 
 export default PasswordManager;
