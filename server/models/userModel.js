@@ -1,14 +1,12 @@
 const mongoose = require("mongoose");
+const model = require('mongoose').model;
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    username: {
       type: String,
       required: true,
-    },
-    email: {
-      type: String,
-      required: true,
+      unique: true,
     },
     password: {
       type: String,
@@ -18,4 +16,18 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("users", userSchema);
+// module.exports = mongoose.model("users", userSchema);
+const UserModel = model('User', userSchema);
+
+function insertUser(user) {
+  return UserModel.create(user);
+}
+
+function getUserByUsername(username) {
+  return UserModel.findOne({username: username}).exec();
+}
+
+module.exports = {
+  insertUser,
+  getUserByUsername,
+}
