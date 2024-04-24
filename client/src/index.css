@@ -20,3 +20,14 @@ body,
 html {
   margin: 0 !important;
 }
+
+.header {
+  background-color: #52b69a;
+  color: antiquewhite;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.header a:hover,
+i:hover {
+  color: rgb(200, 232, 188);
+}

@@ -10,7 +10,7 @@ function Home() {
       <div className="home bg-gray-100 flex-grow ">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <img src="../../../public/logo.png" className="w-32 mt-14" />
+            <img src="/logo.png" className="w-32 mt-14" />
             <Title level={1} className="text-6xl font-bold uppercase mb-8 mt-2">
               Password Manager
             </Title>
