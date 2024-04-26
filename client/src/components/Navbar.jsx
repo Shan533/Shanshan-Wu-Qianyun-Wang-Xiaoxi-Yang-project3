@@ -1,10 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Navbar() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token"); // Assuming token is stored in local storage
-  const test = useState(false);
+  const [username, setUsername] = useState("");
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchLoggedInUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+          const response = await axios.get(
+            "http://localhost:5000/api/users/loggedIn"
+          );
+          setUser(response.data.user);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchLoggedInUser();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await axios.post("http://localhost:5000/api/users/logout");
+      setUsername("");
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <nav className="shadow gray h-14 pt-6 header">
@@ -18,14 +48,12 @@ function Navbar() {
           </a>
         </div>
         <div className="flex items-center">
-          {test ? (
+          {user ? (
             <>
-              <span className="mr-4 cursor-default">Username</span>
+              <span className="mr-4 cursor-default">{user.username}</span>
               <i
                 className="ri-logout-box-r-line cursor-pointer"
-                onClick={() => {
-                  localStorage.removeItem("token");
-                }}
+                onClick={handleLogout}
               ></i>
             </>
           ) : (
