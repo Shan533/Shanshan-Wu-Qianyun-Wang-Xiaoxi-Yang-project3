@@ -104,8 +104,7 @@ router.get("/loggedIn", async function (request, response) {
 });
 
 router.post("/logout", function (request, response) {
-  response.clearCookie("token");
-  return response.send("Logged out successfully.");
+  response.json({ message: "Logged out successfully" });
 });
 
 module.exports = router;
