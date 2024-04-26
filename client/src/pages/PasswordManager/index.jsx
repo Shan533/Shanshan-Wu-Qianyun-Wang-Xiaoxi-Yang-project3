@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar";
+import Messages from "./Messages";
+import Passwords from "./Passwords";
 
 function PasswordManager() {
   const [passwords, setPasswords] = useState([]);
@@ -7,44 +9,111 @@ function PasswordManager() {
   const [messages, setMessages] = useState([]);
 
   const fetchPasswords = async () => {
-    // Fetch passwords from the server
-    // Update the passwords state with the fetched data
+    try {
+      const response = await fetch("/api/passwords");
+      const data = await response.json();
+      setPasswords(data);
+    } catch (error) {
+      console.error("Error fetching passwords:", error);
+    }
   };
 
   const fetchSharedPasswords = async () => {
-    // Fetch shared passwords from the server
-    // Update the sharedPasswords state with the fetched data
+    try {
+      const response = await fetch("/api/passwords/shared");
+      const data = await response.json();
+      setSharedPasswords(data);
+    } catch (error) {
+      console.error("Error fetching shared passwords:", error);
+    }
   };
 
   const fetchMessages = async () => {
-    // Fetch messages from the server
-    // Update the messages state with the fetched data
+    try {
+      const response = await fetch("/api/messages");
+      const data = await response.json();
+      setMessages(data);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
   };
 
   const handleAddPassword = async (newPassword) => {
-    // Send a POST request to the server to add the new password
-    // Update the passwords state with the new password
+    try {
+      const response = await fetch("/api/passwords", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newPassword),
+      });
+      const data = await response.json();
+      setPasswords([...passwords, data]);
+    } catch (error) {
+      console.error("Error adding password:", error);
+    }
   };
 
   const handleAcceptShare = async (messageId) => {
-    // Send a request to the server to accept the password share
-    // Update the messages state by removing the accepted message
-    // Update the sharedPasswords state with the newly shared password
+    try {
+      await fetch(`/api/messages/${messageId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: "accept" }),
+      });
+      setMessages(messages.filter((message) => message._id !== messageId));
+      fetchSharedPasswords();
+    } catch (error) {
+      console.error("Error accepting share:", error);
+    }
   };
 
   const handleDeclineShare = async (messageId) => {
-    // Send a request to the server to decline the password share
-    // Update the messages state by removing the declined message
+    try {
+      await fetch(`/api/messages/${messageId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action: "reject" }),
+      });
+      setMessages(messages.filter((message) => message._id !== messageId));
+    } catch (error) {
+      console.error("Error declining share:", error);
+    }
   };
 
   const handleUpdatePassword = async (passwordId, updatedPassword) => {
-    // Send a request to the server to update the password
-    // Update the passwords state with the updated password
+    try {
+      const response = await fetch(`/api/passwords/${passwordId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedPassword),
+      });
+      const data = await response.json();
+      setPasswords(
+        passwords.map((password) =>
+          password._id === passwordId ? data : password
+        )
+      );
+    } catch (error) {
+      console.error("Error updating password:", error);
+    }
   };
 
   const handleDeletePassword = async (passwordId) => {
-    // Send a request to the server to delete the password
-    // Update the passwords state by removing the deleted password
+    try {
+      await fetch(`/api/passwords/${passwordId}`, {
+        method: "DELETE",
+      });
+      setPasswords(passwords.filter((password) => password._id !== passwordId));
+    } catch (error) {
+      console.error("Error deleting password:", error);
+    }
   };
 
   useEffect(() => {
@@ -55,7 +124,18 @@ function PasswordManager() {
   return (
     <>
       <Navbar />
-      <div>PasswordManager</div>
+      <Messages
+        messages={messages}
+        onAcceptShare={handleAcceptShare}
+        onDeclineShare={handleDeclineShare}
+      />
+      <Passwords
+        passwords={passwords}
+        sharedPasswords={sharedPasswords}
+        onAddPassword={handleAddPassword}
+        onUpdatePassword={handleUpdatePassword}
+        onDeletePassword={handleDeletePassword}
+      />
     </>
   );
 }

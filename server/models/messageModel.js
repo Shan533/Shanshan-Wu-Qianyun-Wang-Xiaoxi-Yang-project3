@@ -18,7 +18,8 @@ const messageSchema = new mongoose.Schema({
   },
   sharedState: {
     type: String,
-    required: true,
+    enum: ["pending", "accepted", "rejected"],
+    default: "pending",
   },
   createdAt: {
     type: Date,

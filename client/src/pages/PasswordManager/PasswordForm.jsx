@@ -1,4 +1,3 @@
-// components/PasswordForm.js
 import React from "react";
 import { Modal, Form, Input, Checkbox } from "antd";
 import { generate } from "generate-password";
@@ -8,19 +7,21 @@ function PasswordForm({ visible, onCancel, onSubmit }) {
 
   const handleSubmit = () => {
     form.validateFields().then((values) => {
-      const { website, password, num, alphabet, marks } = values;
+      const { website, password, num, alphabet, marks, length } = values;
       let generatedPassword = password;
 
-      if (num || alphabet || marks) {
-        generatedPassword = generate({
-          numbers: num,
-          uppercase: alphabet,
-          lowercase: alphabet,
+      if (!password && (num || alphabet || marks)) {
+        const payload = {
+          url: website,
+          alphabet: alphabet,
+          numerals: num,
           symbols: marks,
-        });
+          length: length || 8,
+        };
+        onSubmit(payload);
+      } else {
+        onSubmit({ url: website, password: generatedPassword });
       }
-
-      onSubmit({ website, password: generatedPassword });
       form.resetFields();
       onCancel();
     });
@@ -55,7 +56,10 @@ function PasswordForm({ visible, onCancel, onSubmit }) {
           <Checkbox>Alphabet</Checkbox>
         </Form.Item>
         <Form.Item name="marks" valuePropName="checked">
-          <Checkbox>Marks</Checkbox>
+          <Checkbox>Symbols</Checkbox>
+        </Form.Item>
+        <Form.Item name="length" label="Length">
+          <Input type="number" min={4} max={50} />
         </Form.Item>
       </Form>
     </Modal>

@@ -18,7 +18,7 @@ function Home() {
               Securely store and manage your passwords with ease
             </Paragraph>
             <div className="flex justify-center mb-12">
-              <Button type="primary" size="large" href="/register">
+              <Button type="primary" size="large" href="/login">
                 Get Started
               </Button>
             </div>

@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import { Input, Button, Modal, Form, Checkbox } from "antd";
+import { Input, Button, Modal, Form } from "antd";
 import {
   EyeOutlined,
   EyeInvisibleOutlined,
   EditOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
-import { generate } from "generate-password";
-import Messages from "./Messages";
 import PasswordForm from "./PasswordForm";
 
 function Passwords({
@@ -20,6 +18,7 @@ function Passwords({
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState("");
+  const [shareUsername, setShareUsername] = useState("");
 
   const handleAddPassword = () => {
     setIsModalVisible(true);
@@ -27,6 +26,23 @@ function Passwords({
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
+  };
+
+  const handleSharePassword = async () => {
+    try {
+      await fetch("/api/passwords/share", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username: shareUsername }),
+      });
+      setShareUsername("");
+      // Display success message
+    } catch (error) {
+      console.error("Error sharing password:", error);
+      // Display error message
+    }
   };
 
   const handleTogglePasswordVisibility = (passwordId) => {
@@ -72,9 +88,8 @@ function Passwords({
       key: "createdBy",
     },
     {
-      title: "Created Date",
-      dataIndex: "createdAt",
-      dataIndex: "createdAt",
+      title: "Last Updated",
+      dataIndex: "updatedAt",
     },
     {
       title: "Actions",
@@ -97,7 +112,7 @@ function Passwords({
   return (
     <div>
       <div className="section-header">
-        <h2>Password</h2>
+        <h2>Passwords</h2>
         <Button type="primary" onClick={handleAddPassword}>
           Add
         </Button>
@@ -108,10 +123,10 @@ function Passwords({
           value={searchTerm}
           onChange={handleSearch}
           style={{ marginBottom: 16 }}
-        ></Input>
+        />
       </div>
       <div className="passwords">
-        <h3>Self Passwords</h3>
+        <h3>My Passwords</h3>
         <table>
           <thead>
             <tr>
