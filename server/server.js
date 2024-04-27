@@ -13,9 +13,11 @@ app.use(
 const port = process.env.PORT || 5000;
 const users = require("./routes/usersRoute");
 const passwords = require("./routes/passwordRoute");
+const shareRoutes = require('./routes/shareRoutes');
 
 app.use("/api/users", users);
 app.use("/api/passwords", passwords);
+app.use('/api/share', shareRoutes);
 
 const path = require("path");
 __dirname = path.resolve();

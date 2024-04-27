@@ -121,18 +121,53 @@ router.put('/:id', async (req, res) => {
 
 // Helper function to generate a random password
 function generatePassword(alphabet, numerals, symbols, length) {
+  // Check if at least one checkbox is selected
+  if (!alphabet && !numerals && !symbols) {
+    throw new Error('At least one character type must be selected');
+  }
+
+  // Check if length is within the valid range
+  if (length < 4 || length > 50) {
+    throw new Error('Length must be between 4 and 50');
+  }
+
   const characters = [];
   if (alphabet) characters.push(...Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i)));
   if (numerals) characters.push(...Array.from({ length: 10 }, (_, i) => i.toString()));
-  if (symbols) characters.push("!", "@", "#", "$", "%", "^", "&", "*");
+  if (symbols) characters.push('!', '@', '#', '$', '%', '^', '&', '*');
 
-  let password = "";
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    password += characters[randomIndex];
+  let password = '';
+
+  // Ensure at least one character from each selected type is included
+  if (alphabet) password += getRandomCharacter(characters.slice(0, 26));
+  if (numerals) password += getRandomCharacter(characters.slice(26, 36));
+  if (symbols) password += getRandomCharacter(characters.slice(36));
+
+  // Generate the remaining characters randomly
+  for (let i = password.length; i < length; i++) {
+    password += getRandomCharacter(characters);
   }
 
+  // Shuffle the password characters to ensure randomness
+  password = shuffleString(password);
+
   return password;
+}
+
+// Helper function to get a random character from an array
+function getRandomCharacter(characters) {
+  const randomIndex = Math.floor(Math.random() * characters.length);
+  return characters[randomIndex];
+}
+
+// Helper function to shuffle the characters in a string
+function shuffleString(string) {
+  const arr = string.split('');
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr.join('');
 }
 
 module.exports = router;

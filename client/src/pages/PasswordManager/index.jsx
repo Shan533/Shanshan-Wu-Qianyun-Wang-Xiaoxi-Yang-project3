@@ -12,6 +12,7 @@ import {
 } from "antd";
 import Navbar from "../../components/Navbar";
 import { useNavigate } from "react-router-dom";
+import ShareRequestModal from './sharePasswordForm';
 
 const { Title } = Typography;
 
@@ -25,6 +26,8 @@ function PasswordManager() {
   const [updatePasswordId, setUpdatePasswordId] = useState(null);
   const [updatePassword, setUpdatePassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [shareModalVisible, setShareModalVisible] = useState(false);
+  const [selectedPassword, setSelectedPassword] = useState(null);
 
   useEffect(() => {
     const fetchLoggedInUser = async () => {
@@ -112,6 +115,11 @@ function PasswordManager() {
     setUpdateModalVisible(true);
   };
 
+  const showShareModal = (record) => {
+    setSelectedPassword(record);
+    setShareModalVisible(true);
+  };
+
   const handleCopyPassword = (password) => {
     navigator.clipboard.writeText(password);
     message.success("Password copied to clipboard");
@@ -189,6 +197,7 @@ function PasswordManager() {
             className="ri-delete-bin-line cursor-pointer text-xl"
           ></i>
           <i
+            onClick={() => showShareModal(record)}
             style={{ marginRight: "16px" }}
             className="ri-user-shared-line cursor-pointer text-xl"
           ></i>
@@ -273,6 +282,15 @@ function PasswordManager() {
           placeholder="Enter new password"
         />
       </Modal>
+      <ShareRequestModal
+        visible={shareModalVisible}
+        onCancel={() => setShareModalVisible(false)}
+        onShare={() => {
+          setShareModalVisible(false);
+          fetchPasswords();
+        }}
+        password={selectedPassword}
+      />
     </div>
   );
 }
