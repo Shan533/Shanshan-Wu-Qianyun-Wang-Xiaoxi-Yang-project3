@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import {
   Typography,
@@ -19,6 +19,7 @@ const { Title } = Typography;
 
 function PasswordManager() {
   const [passwords, setPasswords] = useState([]);
+  const [sharedPasswords, setSharedPasswords] = useState([]);
   const [visible, setVisible] = useState(false);
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ function PasswordManager() {
   useEffect(() => {
     if (user) {
       fetchPasswords();
+      fetchSharedPasswords();
     }
   }, [user]);
 
@@ -63,6 +65,23 @@ function PasswordManager() {
     } catch (error) {
       console.error("Failed to fetch passwords:", error);
     }
+  };
+
+  const fetchSharedPasswords = async () => {
+    try {
+      const response = await axios.get("/api/share/shared");
+      setSharedPasswords(response.data);
+    } catch (error) {
+      console.error("Failed to fetch shared passwords:", error);
+    }
+  };
+
+  const handleAcceptShare = () => {
+    fetchSharedPasswords();
+  };
+
+  const handleRejectShare = () => {
+    fetchSharedPasswords();
   };
 
   const handleAdd = () => {
@@ -148,7 +167,7 @@ function PasswordManager() {
       title: "Password",
       dataIndex: "password",
       key: "password",
-      render: (text, record) => {
+      render: (text) => {
         const togglePasswordVisibility = () => {
           setPasswordVisible(!passwordVisible);
         };
@@ -219,27 +238,97 @@ function PasswordManager() {
     },
   ];
 
+  const sharedColumns = [
+    {
+      title: "Website URL",
+      dataIndex: "url",
+      key: "url",
+    },
+    {
+      title: "Password",
+      dataIndex: "password",
+      key: "password",
+      render: (text) => {
+        const togglePasswordVisibility = () => {
+          setPasswordVisible(!passwordVisible);
+        };
+
+        return (
+          <div>
+            {passwordVisible ? (
+              <span>{text}</span>
+            ) : (
+              <span>{"*".repeat(text.length)}</span>
+            )}
+            {passwordVisible ? (
+              <i
+                className="ri-eye-off-fill mx-2 text-lg"
+                onClick={togglePasswordVisibility}
+              />
+            ) : (
+              <i
+                className="ri-eye-fill mx-2 text-lg"
+                onClick={togglePasswordVisibility}
+              />
+            )}
+
+            <i
+              className="ri-file-copy-line text-lg"
+              onClick={() => handleCopyPassword(text)}
+            />
+          </div>
+        );
+      },
+    },
+    {
+      title: "Shared By",
+      dataIndex: "owner",
+      key: "owner",
+      render: (owner) => owner.username,
+    },
+    {
+      title: "Last Updated",
+      dataIndex: "updatedAt",
+      key: "updatedAt",
+      render: (text) => new Date(text).toLocaleString(),
+    },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
       <div className="bg-gray-100 flex-grow">
         <div className="container mx-auto px-4">
-          <div className="text-center mt-8 grid">
+          <div className="text-center mt-8">
             <Title level={2}>Password Manager</Title>
           </div>
-          <div className="mt-4">
+          <div className="mt-8">
             <div className="max-w-7xl mx-auto">
-              <Messages />
+              <Messages onAccept={handleAcceptShare} onReject={handleRejectShare} />
             </div>
           </div>
 
           <div className="mt-8">
-            <div className="flex justify-end mb-4">
-              <Button type="primary" onClick={handleAdd} className="w-32">
-                Add Password
-              </Button>
+            <div className="max-w-7xl mx-auto">
+              <div className="flex justify-end mb-4">
+                <Button type="primary" onClick={handleAdd} className="w-32">
+                  Add Password
+                </Button>
+              </div>
+              <div className="bg-white p-4 rounded shadow">
+                <h2 className="text-2xl font-bold mb-4">Self Passwords</h2>
+                <Table columns={columns} dataSource={passwords} rowKey="_id" />
+              </div>
             </div>
-            <Table columns={columns} dataSource={passwords} rowKey="_id" />
+          </div>
+
+          <div className="mt-8">
+            <div className="max-w-7xl mx-auto">
+              <div className="bg-white p-4 rounded shadow">
+                <h2 className="text-2xl font-bold mb-4">Shared Passwords</h2>
+                <Table columns={sharedColumns} dataSource={sharedPasswords} rowKey="_id" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -284,6 +373,7 @@ function PasswordManager() {
           </Form.Item>
         </Form>
       </Modal>
+
       <Modal
         visible={updateModalVisible}
         title="Update Password"
@@ -296,6 +386,7 @@ function PasswordManager() {
           placeholder="Enter new password"
         />
       </Modal>
+
       <ShareRequestModal
         visible={shareModalVisible}
         onCancel={() => setShareModalVisible(false)}

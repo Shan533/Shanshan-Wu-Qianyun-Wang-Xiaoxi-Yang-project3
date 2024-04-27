@@ -91,8 +91,8 @@ router.put('/accept/:requestId', async (req, res) => {
     await shareRequest.save();
 
     // Update the passwords to include the recipient in the sharedWith array
-    await PasswordModel.updateMany(
-      { owner: shareRequest.sender },
+    await PasswordModel.updateOne(
+      { _id: shareRequest.password },
       { $addToSet: { sharedWith: recipient } }
     );
 
@@ -132,6 +132,26 @@ router.put('/reject/:requestId', async (req, res) => {
   } catch (error) {
     console.error('Failed to reject share request:', error);
     res.status(500).json({ error: 'Failed to reject share request' });
+  }
+});
+
+// Get shared passwords for the logged-in user
+router.get('/shared', async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.jwt_secret);
+    const userId = decoded.userId;
+
+    const sharedPasswords = await PasswordModel.find({ sharedWith: userId }).populate('owner', 'username');
+
+    res.json(sharedPasswords);
+  } catch (error) {
+    console.error('Failed to fetch shared passwords:', error);
+    res.status(500).json({ error: 'Failed to fetch shared passwords' });
   }
 });
 

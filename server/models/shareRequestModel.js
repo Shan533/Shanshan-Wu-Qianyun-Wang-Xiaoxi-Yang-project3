@@ -12,6 +12,11 @@ const shareRequestSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    password: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Password',
+      required: true,
+    },
     status: {
       type: String,
       enum: ['pending', 'accepted', 'rejected'],

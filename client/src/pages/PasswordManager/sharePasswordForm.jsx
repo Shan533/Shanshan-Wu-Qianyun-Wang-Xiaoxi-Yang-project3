@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { Form, Input, Button, message, Modal } from 'antd';
 import axios from 'axios';
 
@@ -6,13 +7,17 @@ function ShareRequestModal({ visible, onCancel, onShare, password }) {
 
   const handleShare = async (values) => {
     try {
-      await axios.post("/api/share/send", {
+      const response = await axios.post("/api/share/send", {
         ...values,
         passwordId: password._id,
       });
-      message.success('Share request sent successfully');
-      form.resetFields();
-      onShare();
+      if (response.data.error) {
+        message.error(response.data.error);
+      } else {
+        message.success('Share request sent successfully');
+        form.resetFields();
+        onShare();
+      }
     } catch (error) {
       console.error("Failed to send share request:", error);
       message.error("Failed to send share request");

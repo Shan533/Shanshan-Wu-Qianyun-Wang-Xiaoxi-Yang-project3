@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const PasswordModel = require('../models/passwordModel');
-// const { generatePassword } = require('../utils/passwordGenerator');
 const jwt = require('jsonwebtoken');
 
 router.get('/', async (req, res) => {
