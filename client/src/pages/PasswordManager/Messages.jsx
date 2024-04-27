@@ -1,18 +1,39 @@
-import { Button } from "antd";
+import { Button, Table } from "antd";
 import React from "react";
 
-function Messages({ messages, onAcceptShare, onDeclineShare }) {
+function Messages() {
+  const columns = [
+    {
+      title: "Shared By",
+      key: "sentUser",
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (text, record) => (
+        <>
+          <i
+            style={{ marginRight: "16px" }}
+            className="ri-check-line cursor-pointer text-xl"
+          ></i>
+          <i
+            style={{ marginRight: "16px" }}
+            className="ri-close-line cursor-pointer text-xl"
+          ></i>
+        </>
+      ),
+    },
+  ];
+
   return (
-    <div>
-      <div>
-        <h2>Messages</h2>
-        {messages.map((message) => (
-          <div key={message.id}>
-            <p>{message.sentUser} wants to share a password.</p>
-            <Button onClick={() => onAcceptShare(message.id)}>Accept</Button>
-            <Button onClick={() => onDeclineShare(message.id)}>Decline</Button>
-          </div>
-        ))}
+    <div className="bg-gray-100 p-4 rounded shadow">
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold mb-2">Messages</h2>
+        <Table
+          columns={columns}
+          rowKey="_id"
+          className="bg-white rounded shadow"
+        />
       </div>
     </div>
   );

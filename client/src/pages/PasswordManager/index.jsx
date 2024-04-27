@@ -12,6 +12,7 @@ import {
 } from "antd";
 import Navbar from "../../components/Navbar";
 import { useNavigate } from "react-router-dom";
+import Messages from "./Messages";
 import ShareRequestModal from './sharePasswordForm';
 
 const { Title } = Typography;
@@ -223,27 +224,26 @@ function PasswordManager() {
       <Navbar />
       <div className="bg-gray-100 flex-grow">
         <div className="container mx-auto px-4">
-          <div className="text-center mt-12 grid">
+          <div className="text-center mt-8 grid">
             <Title level={2}>Password Manager</Title>
-            <div className="flex justify-end">
+          </div>
+          <div className="mt-4">
+            <div className="max-w-7xl mx-auto">
+              <Messages />
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <div className="flex justify-end mb-4">
               <Button type="primary" onClick={handleAdd} className="w-32">
                 Add Password
               </Button>
             </div>
-          </div>
-          <div className="mt-8">
             <Table columns={columns} dataSource={passwords} rowKey="_id" />
           </div>
         </div>
       </div>
-      <footer className="bg-gray-200 pt-6 pb-2">
-        <div className="container mx-auto px-4 text-center">
-          <Typography.Paragraph className="text-gray-600">
-            &copy; {new Date().getFullYear()} Password Manager. All rights
-            reserved.
-          </Typography.Paragraph>
-        </div>
-      </footer>
+
       <Modal
         visible={visible}
         title="Add Password"
