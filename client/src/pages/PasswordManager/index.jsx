@@ -141,18 +141,18 @@ function PasswordManager() {
             )}
             {passwordVisible ? (
               <i
-                className="ri-eye-off-fill text-xl"
+                className="ri-eye-off-fill mx-2 text-lg"
                 onClick={togglePasswordVisibility}
               />
             ) : (
               <i
-                className="ri-eye-fill text-xl"
+                className="ri-eye-fill mx-2 text-lg"
                 onClick={togglePasswordVisibility}
               />
             )}
 
             <i
-              className="ri-file-copy-line text-xl"
+              className="ri-file-copy-line text-lg"
               onClick={() => handleCopyPassword(text)}
             />
           </div>
@@ -202,11 +202,13 @@ function PasswordManager() {
       <Navbar />
       <div className="bg-gray-100 flex-grow">
         <div className="container mx-auto px-4">
-          <div className="text-center mt-12">
+          <div className="text-center mt-12 grid">
             <Title level={2}>Password Manager</Title>
-            <Button type="primary" onClick={handleAdd}>
-              Add Password
-            </Button>
+            <div className="flex justify-end">
+              <Button type="primary" onClick={handleAdd} className="w-32">
+                Add Password
+              </Button>
+            </div>
           </div>
           <div className="mt-8">
             <Table columns={columns} dataSource={passwords} rowKey="_id" />
