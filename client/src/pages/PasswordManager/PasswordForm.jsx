@@ -1,6 +1,5 @@
 import React from "react";
 import { Modal, Form, Input, Checkbox } from "antd";
-import { generate } from "generate-password";
 
 function PasswordForm({ visible, onCancel, onSubmit }) {
   const [form] = Form.useForm();
@@ -42,11 +41,7 @@ function PasswordForm({ visible, onCancel, onSubmit }) {
         >
           <Input />
         </Form.Item>
-        <Form.Item
-          name="password"
-          label="Password"
-          rules={[{ required: true, message: "Please enter a password" }]}
-        >
+        <Form.Item name="password" label="Password">
           <Input.Password />
         </Form.Item>
         <Form.Item name="num" valuePropName="checked">

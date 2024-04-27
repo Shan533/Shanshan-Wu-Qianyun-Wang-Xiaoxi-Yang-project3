@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { Input, Button, Modal, Form } from "antd";
 import {
   EyeOutlined,
@@ -30,13 +31,7 @@ function Passwords({
 
   const handleSharePassword = async () => {
     try {
-      await fetch("/api/passwords/share", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username: shareUsername }),
-      });
+      await axios.post("/api/passwords/share", { username: shareUsername });
       setShareUsername("");
       // Display success message
     } catch (error) {
@@ -176,15 +171,17 @@ function Passwords({
       </div>
       <Modal
         title="Add Password"
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
         <PasswordForm
+          visible={isModalVisible}
           onSubmit={(newPassword) => {
             onAddPassword(newPassword);
             setIsModalVisible(false);
           }}
+          onCancel={() => setIsModalVisible(false)}
         />
       </Modal>
     </div>

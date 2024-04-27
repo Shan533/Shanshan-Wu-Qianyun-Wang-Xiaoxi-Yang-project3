@@ -10,7 +10,7 @@ function cookieDecryptor(request) {
     return false;
   } else {
     try {
-      return jwt.verify(token, "USER_SECRET").username;
+      return jwt.verify(token, process.env.jwt_secret).username;
     } catch (error) {
       console.log(error);
       return false;
@@ -43,7 +43,7 @@ router.post("/register", async function (request, response) {
   try {
     await UserModel.insertUser(newUser);
     const cookieData = { username: username };
-    const token = jwt.sign(cookieData, "USER_SECRET", {
+    const token = jwt.sign(cookieData, process.env.jwt_secret, {
       expiresIn: "14d",
     });
     response.cookie("token", token, { httpOnly: true });
@@ -78,7 +78,7 @@ router.post("/login", async function (request, response) {
       return;
     }
 
-    const token = jwt.sign({ userId: user._id }, "USER_SECRET", {
+    const token = jwt.sign({ userId: user._id }, process.env.jwt_secret, {
       expiresIn: "1h",
     });
     response.json({ token, user }); // Include the user object in the response
@@ -91,7 +91,7 @@ router.get("/loggedIn", async function (request, response) {
   const token = request.headers.authorization;
   if (token) {
     try {
-      const decoded = jwt.verify(token.replace("Bearer ", ""), "USER_SECRET");
+      const decoded = jwt.verify(token.replace("Bearer ", ""), process.env.jwt_secret);
       const userId = decoded.userId;
       const user = await UserModel.getUserById(userId);
       response.json({ user });
@@ -105,6 +105,23 @@ router.get("/loggedIn", async function (request, response) {
 
 router.post("/logout", function (request, response) {
   response.json({ message: "Logged out successfully" });
+});
+
+router.get("/:userId", async function (request, response) {
+  const userId = request.params.userId;
+
+  try {
+    const user = await UserModel.getUserById(userId);
+
+    if (!user) {
+      response.status(404).send("User not found");
+      return;
+    }
+
+    response.json(user);
+  } catch (error) {
+    response.status(500).send("Failed to retrieve user: " + error);
+  }
 });
 
 module.exports = router;

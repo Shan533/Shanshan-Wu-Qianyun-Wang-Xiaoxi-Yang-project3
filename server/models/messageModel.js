@@ -11,11 +11,11 @@ const messageSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  sharedPassword: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Password",
-    required: true,
-  },
+  // sharedPassword: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "Password",
+  //   required: true,
+  // },
   sharedState: {
     type: String,
     enum: ["pending", "accepted", "rejected"],

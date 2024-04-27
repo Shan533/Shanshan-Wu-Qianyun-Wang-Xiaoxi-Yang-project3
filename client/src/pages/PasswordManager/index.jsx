@@ -1,161 +1,226 @@
-import React, { useState, useEffect } from "react";
-import Navbar from "../../components/Navbar";
-import Messages from "./Messages";
-import Passwords from "./Passwords";
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Typography, Table, Button, Modal, Form, Input, Checkbox, message } from 'antd';
+import Navbar from '../../components/Navbar';
+import { useNavigate } from 'react-router-dom';
+
+const { Title } = Typography;
 
 function PasswordManager() {
   const [passwords, setPasswords] = useState([]);
-  const [sharedPasswords, setSharedPasswords] = useState([]);
-  const [messages, setMessages] = useState([]);
+  const [visible, setVisible] = useState(false);
+  const [form] = Form.useForm();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [updateModalVisible, setUpdateModalVisible] = useState(false);
+  const [updatePasswordId, setUpdatePasswordId] = useState(null);
+  const [updatePassword, setUpdatePassword] = useState('');
+
+  useEffect(() => {
+    const fetchLoggedInUser = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          const response = await axios.get('http://localhost:5000/api/users/loggedIn');
+          setUser(response.data.user);
+        } else {
+          navigate('/login');
+        }
+      } catch (error) {
+        console.log(error);
+        navigate('/login');
+      }
+    };
+
+    fetchLoggedInUser();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (user) {
+      fetchPasswords();
+    }
+  }, [user]);
 
   const fetchPasswords = async () => {
     try {
-      const response = await fetch("/api/passwords");
-      const data = await response.json();
-      setPasswords(data);
+      const response = await axios.get('http://localhost:5000/api/passwords');
+      setPasswords(response.data);
     } catch (error) {
-      console.error("Error fetching passwords:", error);
+      console.error('Failed to fetch passwords:', error);
     }
   };
 
-  const fetchSharedPasswords = async () => {
+  const handleAdd = () => {
+    setVisible(true);
+  };
+
+  const handleCancel = () => {
+    setVisible(false);
+    form.resetFields();
+  };
+
+  const handleSubmit = async (values) => {
     try {
-      const response = await fetch("/api/passwords/shared");
-      const data = await response.json();
-      setSharedPasswords(data);
+      if (values.password) {
+        await axios.post('http://localhost:5000/api/passwords', values);
+      } else {
+        await axios.post('http://localhost:5000/api/passwords/generate', values);
+      }
+      setVisible(false);
+      form.resetFields();
+      fetchPasswords();
     } catch (error) {
-      console.error("Error fetching shared passwords:", error);
+      console.error('Failed to save password:', error);
     }
   };
 
-  const fetchMessages = async () => {
+  const handleDelete = async (passwordId) => {
     try {
-      const response = await fetch("/api/messages");
-      const data = await response.json();
-      setMessages(data);
+      await axios.delete(`http://localhost:5000/api/passwords/${passwordId}`);
+      fetchPasswords();
     } catch (error) {
-      console.error("Error fetching messages:", error);
+      console.error('Failed to delete password:', error);
     }
   };
 
-  const handleAddPassword = async (newPassword) => {
+  const handleUpdatePassword = async () => {
     try {
-      const response = await fetch("/api/passwords", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newPassword),
+      await axios.put(`http://localhost:5000/api/passwords/${updatePasswordId}`, {
+        password: updatePassword,
       });
-      const data = await response.json();
-      setPasswords([...passwords, data]);
+      setUpdateModalVisible(false);
+      fetchPasswords();
     } catch (error) {
-      console.error("Error adding password:", error);
+      console.error('Failed to update password:', error);
     }
   };
 
-  const handleAcceptShare = async (messageId) => {
-    try {
-      await fetch(`/api/messages/${messageId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action: "accept" }),
-      });
-      setMessages(messages.filter((message) => message._id !== messageId));
-      fetchSharedPasswords();
-    } catch (error) {
-      console.error("Error accepting share:", error);
-    }
+  const showUpdateModal = (record) => {
+    setUpdatePasswordId(record._id);
+    setUpdatePassword(record.password);
+    setUpdateModalVisible(true);
   };
 
-  const handleDeclineShare = async (messageId) => {
-    try {
-      await fetch(`/api/messages/${messageId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action: "reject" }),
-      });
-      setMessages(messages.filter((message) => message._id !== messageId));
-    } catch (error) {
-      console.error("Error declining share:", error);
-    }
-  };
+  const columns = [
+    {
+      title: 'Website URL',
+      dataIndex: 'url',
+      key: 'url',
+    },
+    {
+      title: 'Password',
+      dataIndex: 'password',
+      key: 'password',
+    },
+    {
+      title: 'Created By',
+      dataIndex: 'owner',
+      key: 'owner',
+      render: () => {
+        return <div>{user.username}</div>;
+      }
+    },
+    {
+      title: 'Last Updated',
+      dataIndex: 'updatedAt',
+      key: 'updatedAt',
+      render: (text) => new Date(text).toLocaleString(),
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (text, record) => (
+        <>
+          <Button
+            icon={<img src="../../../public/edit-2-line.png" alt="Edit" />}
+            onClick={() => showUpdateModal(record)}
+            style={{ marginRight: '16px' }}
+          />
+          <Button
+            icon={<img src="../../../public/delete-bin-line.png" alt="Delete" />}
+            onClick={() => handleDelete(record._id)}
+          />
+        </>
+      ),
+    },
+  ];
 
-  const handleUpdatePassword = async (passwordId, updatedPassword) => {
-    try {
-      const response = await fetch(`/api/passwords/${passwordId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedPassword),
-      });
-      const data = await response.json();
-      setPasswords(
-        passwords.map((password) =>
-          password._id === passwordId ? data : password
-        )
-      );
-    } catch (error) {
-      console.error("Error updating password:", error);
-    }
-  };
-
-  const handleDeletePassword = async (passwordId) => {
-    try {
-      await fetch(`/api/passwords/${passwordId}`, {
-        method: "DELETE",
-      });
-      setPasswords(passwords.filter((password) => password._id !== passwordId));
-    } catch (error) {
-      console.error("Error deleting password:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchPasswords();
-    fetchSharedPasswords();
-    fetchMessages();
-  }, []);
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <Messages
-        messages={messages}
-        onAcceptShare={handleAcceptShare}
-        onDeclineShare={handleDeclineShare}
-      />
-      <Passwords
-        passwords={passwords}
-        sharedPasswords={sharedPasswords}
-        onAddPassword={handleAddPassword}
-        onUpdatePassword={handleUpdatePassword}
-        onDeletePassword={handleDeletePassword}
-      />
-    </>
+      <div className="bg-gray-100 flex-grow">
+        <div className="container mx-auto px-4">
+          <div className="text-center mt-12">
+            <Title level={2}>Password Manager</Title>
+            <Button type="primary" onClick={handleAdd}>
+              Add Password
+            </Button>
+          </div>
+          <div className="mt-8">
+            <Table columns={columns} dataSource={passwords} rowKey="_id" />
+          </div>
+        </div>
+      </div>
+      <footer className="bg-gray-200 pt-6 pb-2">
+        <div className="container mx-auto px-4 text-center">
+          <Typography.Paragraph className="text-gray-600">
+            &copy; {new Date().getFullYear()} Password Manager. All rights reserved.
+          </Typography.Paragraph>
+        </div>
+      </footer>
+      <Modal
+        visible={visible}
+        title="Add Password"
+        onCancel={handleCancel}
+        footer={[
+          <Button key="cancel" onClick={handleCancel}>
+            Cancel
+          </Button>,
+          <Button key="submit" type="primary" onClick={() => form.submit()}>
+            Submit
+          </Button>,
+        ]}
+      >
+        <Form form={form} onFinish={handleSubmit}>
+          <Form.Item
+            name="url"
+            label="Website URL"
+            rules={[{ required: true, message: 'Please enter the website URL' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item name="password" label="Password">
+            <Input />
+          </Form.Item>
+          <Form.Item name="alphabet" valuePropName="checked">
+            <Checkbox>Alphabet</Checkbox>
+          </Form.Item>
+          <Form.Item name="numerals" valuePropName="checked">
+            <Checkbox>Numerals</Checkbox>
+          </Form.Item>
+          <Form.Item name="symbols" valuePropName="checked">
+            <Checkbox>Symbols</Checkbox>
+          </Form.Item>
+          <Form.Item name="length" label="Length">
+            <Input type="number" min={4} max={50} />
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        visible={updateModalVisible}
+        title="Update Password"
+        onCancel={() => setUpdateModalVisible(false)}
+        onOk={handleUpdatePassword}
+      >
+        <Input
+          value={updatePassword}
+          onChange={(e) => setUpdatePassword(e.target.value)}
+          placeholder="Enter new password"
+        />
+      </Modal>
+    </div>
   );
 }
 
 export default PasswordManager;
-
-/**
- * At the top of the page, an input field URL/name and Password
- * Additionally, 3 checkboxes with the following values:
- * alphabet, numerals, symbols;
- * finally there should be another input field called “length”.
- * Finally, there should be a submit button.
- *
- *
- * Share
- * Somewhere on the password manager page,
- * there should be a way to input another user’s username as well as an “Submit” button. (handle no exist error)
- * When submitted, the other user see a message on their password manager page
- * that a user wants to share passwords. show the username.
- * If accepts, they should be able to see the other user’s passwords below their own,
- * but should not be able to modify or delete them.
- * If the user rejects, the user will not see the request again and no passwords will be shared.
- */

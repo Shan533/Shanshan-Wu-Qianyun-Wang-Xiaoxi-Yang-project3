@@ -1,31 +1,24 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const passwordSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  sharedWith: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+const passwordSchema = new mongoose.Schema(
+  {
+    url: {
+      type: String,
+      required: true,
     },
-  ],
-  website: {
-    type: String,
-    required: true,
+    password: {
+      type: String,
+      required: true,
+    },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
   },
-  password: {
-    type: String,
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true }
+);
 
-const Password = mongoose.model("Password", passwordSchema);
+const PasswordModel = mongoose.model('Password', passwordSchema);
 
-module.exports = Password;
+module.exports = PasswordModel;
