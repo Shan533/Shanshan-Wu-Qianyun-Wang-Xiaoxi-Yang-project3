@@ -22,7 +22,7 @@ function PasswordManager() {
         const token = localStorage.getItem('token');
         if (token) {
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-          const response = await axios.get('http://localhost:5000/api/users/loggedIn');
+          const response = await axios.get('/api/users/loggedIn');
           setUser(response.data.user);
         } else {
           navigate('/login');
@@ -44,7 +44,7 @@ function PasswordManager() {
 
   const fetchPasswords = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/passwords');
+      const response = await axios.get('/api/passwords');
       setPasswords(response.data);
     } catch (error) {
       console.error('Failed to fetch passwords:', error);
@@ -63,9 +63,9 @@ function PasswordManager() {
   const handleSubmit = async (values) => {
     try {
       if (values.password) {
-        await axios.post('http://localhost:5000/api/passwords', values);
+        await axios.post('/api/passwords', values);
       } else {
-        await axios.post('http://localhost:5000/api/passwords/generate', values);
+        await axios.post('/api/passwords/generate', values);
       }
       setVisible(false);
       form.resetFields();
@@ -77,7 +77,7 @@ function PasswordManager() {
 
   const handleDelete = async (passwordId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/passwords/${passwordId}`);
+      await axios.delete(`/api/passwords/${passwordId}`);
       fetchPasswords();
     } catch (error) {
       console.error('Failed to delete password:', error);
@@ -86,7 +86,7 @@ function PasswordManager() {
 
   const handleUpdatePassword = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/passwords/${updatePasswordId}`, {
+      await axios.put(`/api/passwords/${updatePasswordId}`, {
         password: updatePassword,
       });
       setUpdateModalVisible(false);

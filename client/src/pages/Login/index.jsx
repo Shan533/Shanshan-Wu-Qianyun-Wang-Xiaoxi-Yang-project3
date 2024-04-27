@@ -17,7 +17,7 @@ function Login() {
   const handleLogin = async (values) => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/users/login",
+        "/api/users/login",
         values
       );
       const { token } = response.data;
@@ -39,7 +39,7 @@ function Login() {
         if (token) {
           axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
           const response = await axios.get(
-            "http://localhost:5000/api/users/loggedIn"
+            "/api/users/loggedIn"
           );
           setUsername(response.data.username);
         }
