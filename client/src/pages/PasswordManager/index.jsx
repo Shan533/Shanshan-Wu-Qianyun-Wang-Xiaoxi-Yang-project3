@@ -1,8 +1,17 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Typography, Table, Button, Modal, Form, Input, Checkbox, message } from 'antd';
-import Navbar from '../../components/Navbar';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  Typography,
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Checkbox,
+  message,
+} from "antd";
+import Navbar from "../../components/Navbar";
+import { useNavigate } from "react-router-dom";
 
 const { Title } = Typography;
 
@@ -14,22 +23,23 @@ function PasswordManager() {
   const [user, setUser] = useState(null);
   const [updateModalVisible, setUpdateModalVisible] = useState(false);
   const [updatePasswordId, setUpdatePasswordId] = useState(null);
-  const [updatePassword, setUpdatePassword] = useState('');
+  const [updatePassword, setUpdatePassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   useEffect(() => {
     const fetchLoggedInUser = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (token) {
-          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-          const response = await axios.get('/api/users/loggedIn');
+          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+          const response = await axios.get("/api/users/loggedIn");
           setUser(response.data.user);
         } else {
-          navigate('/login');
+          navigate("/login");
         }
       } catch (error) {
         console.log(error);
-        navigate('/login');
+        navigate("/login");
       }
     };
 
@@ -44,10 +54,10 @@ function PasswordManager() {
 
   const fetchPasswords = async () => {
     try {
-      const response = await axios.get('/api/passwords');
+      const response = await axios.get("/api/passwords");
       setPasswords(response.data);
     } catch (error) {
-      console.error('Failed to fetch passwords:', error);
+      console.error("Failed to fetch passwords:", error);
     }
   };
 
@@ -63,15 +73,15 @@ function PasswordManager() {
   const handleSubmit = async (values) => {
     try {
       if (values.password) {
-        await axios.post('/api/passwords', values);
+        await axios.post("/api/passwords", values);
       } else {
-        await axios.post('/api/passwords/generate', values);
+        await axios.post("/api/passwords/generate", values);
       }
       setVisible(false);
       form.resetFields();
       fetchPasswords();
     } catch (error) {
-      console.error('Failed to save password:', error);
+      console.error("Failed to save password:", error);
     }
   };
 
@@ -80,7 +90,7 @@ function PasswordManager() {
       await axios.delete(`/api/passwords/${passwordId}`);
       fetchPasswords();
     } catch (error) {
-      console.error('Failed to delete password:', error);
+      console.error("Failed to delete password:", error);
     }
   };
 
@@ -92,7 +102,7 @@ function PasswordManager() {
       setUpdateModalVisible(false);
       fetchPasswords();
     } catch (error) {
-      console.error('Failed to update password:', error);
+      console.error("Failed to update password:", error);
     }
   };
 
@@ -102,45 +112,86 @@ function PasswordManager() {
     setUpdateModalVisible(true);
   };
 
+  const handleCopyPassword = (password) => {
+    navigator.clipboard.writeText(password);
+    message.success("Password copied to clipboard");
+  };
+
   const columns = [
     {
-      title: 'Website URL',
-      dataIndex: 'url',
-      key: 'url',
+      title: "Website URL",
+      dataIndex: "url",
+      key: "url",
     },
     {
-      title: 'Password',
-      dataIndex: 'password',
-      key: 'password',
+      title: "Password",
+      dataIndex: "password",
+      key: "password",
+      render: (text, record) => {
+        const togglePasswordVisibility = () => {
+          setPasswordVisible(!passwordVisible);
+        };
+
+        return (
+          <div>
+            {passwordVisible ? (
+              <span>{text}</span>
+            ) : (
+              <span>{"*".repeat(text.length)}</span>
+            )}
+            {passwordVisible ? (
+              <i
+                className="ri-eye-off-fill text-xl"
+                onClick={togglePasswordVisibility}
+              />
+            ) : (
+              <i
+                className="ri-eye-fill text-xl"
+                onClick={togglePasswordVisibility}
+              />
+            )}
+
+            <i
+              className="ri-file-copy-line text-xl"
+              onClick={() => handleCopyPassword(text)}
+            />
+          </div>
+        );
+      },
     },
     {
-      title: 'Created By',
-      dataIndex: 'owner',
-      key: 'owner',
+      title: "Created By",
+      dataIndex: "owner",
+      key: "owner",
       render: () => {
         return <div>{user.username}</div>;
-      }
+      },
     },
     {
-      title: 'Last Updated',
-      dataIndex: 'updatedAt',
-      key: 'updatedAt',
+      title: "Last Updated",
+      dataIndex: "updatedAt",
+      key: "updatedAt",
       render: (text) => new Date(text).toLocaleString(),
     },
     {
-      title: 'Actions',
-      key: 'actions',
+      title: "Actions",
+      key: "actions",
       render: (text, record) => (
         <>
-          <Button
-            icon={<img src="../../../public/edit-2-line.png" alt="Edit" />}
+          <i
             onClick={() => showUpdateModal(record)}
-            style={{ marginRight: '16px' }}
-          />
-          <Button
-            icon={<img src="../../../public/delete-bin-line.png" alt="Delete" />}
+            style={{ marginRight: "16px" }}
+            className="ri-edit-2-line cursor-pointer text-xl"
+          ></i>
+          <i
             onClick={() => handleDelete(record._id)}
-          />
+            style={{ marginRight: "16px" }}
+            className="ri-delete-bin-line cursor-pointer text-xl"
+          ></i>
+          <i
+            style={{ marginRight: "16px" }}
+            className="ri-user-shared-line cursor-pointer text-xl"
+          ></i>
         </>
       ),
     },
@@ -165,7 +216,8 @@ function PasswordManager() {
       <footer className="bg-gray-200 pt-6 pb-2">
         <div className="container mx-auto px-4 text-center">
           <Typography.Paragraph className="text-gray-600">
-            &copy; {new Date().getFullYear()} Password Manager. All rights reserved.
+            &copy; {new Date().getFullYear()} Password Manager. All rights
+            reserved.
           </Typography.Paragraph>
         </div>
       </footer>
@@ -186,7 +238,9 @@ function PasswordManager() {
           <Form.Item
             name="url"
             label="Website URL"
-            rules={[{ required: true, message: 'Please enter the website URL' }]}
+            rules={[
+              { required: true, message: "Please enter the website URL" },
+            ]}
           >
             <Input />
           </Form.Item>

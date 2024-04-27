@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.3",
-    "antd": "^5.16.2",
+    "antd": "^5.16.4",
     "axios": "^1.6.8",
     "generate-password": "^1.7.1",
     "react": "^18.2.0",
