@@ -4,7 +4,7 @@ import axios from "axios";
 
 function Navbar() {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  // const [username, setUsername] = useState("");
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -14,7 +14,7 @@ function Navbar() {
         if (token) {
           axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
           const response = await axios.get(
-            "http://localhost:5000/api/users/loggedIn"
+            "/api/users/loggedIn"
           );
           setUser(response.data.user);
         }
@@ -28,7 +28,7 @@ function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:5000/api/users/logout");
+      await axios.post("/api/users/logout");
       localStorage.removeItem("token");
       setUser(null);
       navigate("/");

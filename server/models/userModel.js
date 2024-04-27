@@ -35,4 +35,5 @@ module.exports = {
   insertUser,
   getUserByUsername,
   getUserById,
+  findOne: UserModel.findOne.bind(UserModel),
 };

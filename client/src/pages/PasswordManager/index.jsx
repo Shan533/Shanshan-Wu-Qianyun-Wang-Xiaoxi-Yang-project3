@@ -78,13 +78,25 @@ function PasswordManager() {
       if (values.password) {
         await axios.post("/api/passwords", values);
       } else {
+        if (!values.alphabet && !values.numerals && !values.symbols) {
+          message.error("At least one character type must be selected");
+          return;
+        }
+        if (values.length < 4 || values.length > 50) {
+          message.error("Length must be between 4 and 50");
+          return;
+        }
         await axios.post("/api/passwords/generate", values);
       }
       setVisible(false);
       form.resetFields();
       fetchPasswords();
     } catch (error) {
-      console.error("Failed to save password:", error);
+      if (error.response) {
+        message.error(error.response.data.error);
+      } else {
+        message.error("Failed to save password");
+      }
     }
   };
 
@@ -258,16 +270,16 @@ function PasswordManager() {
           <Form.Item name="password" label="Password">
             <Input />
           </Form.Item>
-          <Form.Item name="alphabet" valuePropName="checked">
+          <Form.Item name="alphabet" valuePropName="checked" initialValue={true}>
             <Checkbox>Alphabet</Checkbox>
           </Form.Item>
-          <Form.Item name="numerals" valuePropName="checked">
+          <Form.Item name="numerals" valuePropName="checked" initialValue={true}>
             <Checkbox>Numerals</Checkbox>
           </Form.Item>
-          <Form.Item name="symbols" valuePropName="checked">
+          <Form.Item name="symbols" valuePropName="checked" initialValue={true}>
             <Checkbox>Symbols</Checkbox>
           </Form.Item>
-          <Form.Item name="length" label="Length">
+          <Form.Item name="length" label="Length" initialValue={8}>
             <Input type="number" min={4} max={50} />
           </Form.Item>
         </Form>

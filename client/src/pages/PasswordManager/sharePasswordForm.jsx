@@ -6,9 +6,13 @@ function ShareRequestModal({ visible, onCancel, onShare, password }) {
 
   const handleShare = async (values) => {
     try {
-      await axios.post("/api/share/send", values);
+      await axios.post("/api/share/send", {
+        ...values,
+        passwordId: password._id,
+      });
       message.success('Share request sent successfully');
       form.resetFields();
+      onShare();
     } catch (error) {
       console.error("Failed to send share request:", error);
       message.error("Failed to send share request");

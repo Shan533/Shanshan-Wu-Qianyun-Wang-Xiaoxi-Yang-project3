@@ -3,16 +3,21 @@ const router = express.Router();
 const ShareRequestModel = require('../models/shareRequestModel');
 const PasswordModel = require('../models/passwordModel');
 const UserModel = require('../models/userModel');
-const { authenticateUser } = require('../middlewares/authentication');
+const jwt = require('jsonwebtoken');
 
 // Send a share request
-router.post('/send', authenticateUser, async (req, res) => {
+router.post('/send', async (req, res) => {
   try {
-    const { recipient } = req.body;
-    const sender = req.user._id;
+    const token = req.headers.authorization;
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.jwt_secret);
+    const sender = decoded.userId;
+    const { recipient, passwordId } = req.body;
 
     // Check if the recipient exists
-    const recipientUser = await UserModel.findOne({ username: recipient });
+    const recipientUser = await UserModel.getUserByUsername(recipient);
     if (!recipientUser) {
       return res.status(404).json({ error: 'Recipient not found' });
     }
@@ -26,6 +31,7 @@ router.post('/send', authenticateUser, async (req, res) => {
     const shareRequest = new ShareRequestModel({
       sender,
       recipient: recipientUser._id,
+      password: passwordId,
     });
 
     await shareRequest.save();
@@ -38,9 +44,15 @@ router.post('/send', authenticateUser, async (req, res) => {
 });
 
 // Get all share requests for the logged-in user
-router.get('/requests', authenticateUser, async (req, res) => {
+router.get('/requests', async (req, res) => {
   try {
-    const recipient = req.user._id;
+    const token = req.headers.authorization;
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.jwt_secret);
+    const recipient = decoded.userId;
 
     const shareRequests = await ShareRequestModel.find({ recipient })
       .populate('sender', 'username')
@@ -54,10 +66,17 @@ router.get('/requests', authenticateUser, async (req, res) => {
 });
 
 // Accept a share request
-router.put('/accept/:requestId', authenticateUser, async (req, res) => {
+router.put('/accept/:requestId', async (req, res) => {
   try {
+    const token = req.headers.authorization;
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.jwt_secret);
+    const recipient = decoded.userId;
+
     const { requestId } = req.params;
-    const recipient = req.user._id;
 
     const shareRequest = await ShareRequestModel.findOne({
       _id: requestId,
@@ -85,10 +104,17 @@ router.put('/accept/:requestId', authenticateUser, async (req, res) => {
 });
 
 // Reject a share request
-router.put('/reject/:requestId', authenticateUser, async (req, res) => {
+router.put('/reject/:requestId', async (req, res) => {
   try {
+    const token = req.headers.authorization;
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.jwt_secret);
+    const recipient = decoded.userId;
+
     const { requestId } = req.params;
-    const recipient = req.user._id;
 
     const shareRequest = await ShareRequestModel.findOne({
       _id: requestId,

@@ -53,7 +53,15 @@ router.post('/generate', async (req, res) => {
     const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.jwt_secret);
     const userId = decoded.userId;
     const { url, length, alphabet, numerals, symbols } = req.body;
-    const generatedPassword = generatePassword(length, alphabet, numerals, symbols);
+    
+    if (!alphabet && !numerals && !symbols) {
+      return res.status(400).json({ error: 'At least one character type must be selected' });
+    }
+    if (length < 4 || length > 50) {
+      return res.status(400).json({ error: 'Length must be between 4 and 50' });
+    }
+
+    const generatedPassword = generatePassword(alphabet, numerals, symbols, length);
     const newPassword = new PasswordModel({
       url,
       password: generatedPassword,
@@ -121,16 +129,6 @@ router.put('/:id', async (req, res) => {
 
 // Helper function to generate a random password
 function generatePassword(alphabet, numerals, symbols, length) {
-  // Check if at least one checkbox is selected
-  if (!alphabet && !numerals && !symbols) {
-    throw new Error('At least one character type must be selected');
-  }
-
-  // Check if length is within the valid range
-  if (length < 4 || length > 50) {
-    throw new Error('Length must be between 4 and 50');
-  }
-
   const characters = [];
   if (alphabet) characters.push(...Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i)));
   if (numerals) characters.push(...Array.from({ length: 10 }, (_, i) => i.toString()));
